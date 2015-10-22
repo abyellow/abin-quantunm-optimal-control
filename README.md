@@ -1,2 +1,2 @@
 # QuantunmOptimalControl
-Quantunm Optimal Control Example for Quantum Computing 
+Quantunm Optimal Control Example of Quantum Computing 
