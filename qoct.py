@@ -3,15 +3,27 @@ import numpy as np
 # Quantum Optimal Control Example
 # Two level system
 
+class ini_data:
+
+	def __init__(self):
+		
+		self.H0 
+		self.Hctr
+		self.ctrl_i
+		self.phi_i
+		self.phi_g
+
+
+
 class qoct:
 
-	def __init__(self, H0, Hctr, ctrl_i, phi_i, phi_g):
+	def __init__(self, iniData, errorbd = 10**-4):
 		
-		self.H0 = H0
-		self.Hctr = Hctr
-		self.ctrl_i = ctrl_i
-		self.phi_i = phi_i
-		self.phi_g = phi_g
+		self.H0 = iniData.H0
+		self.Hctr = iniData.Hctr
+		self.ctrl_i = iniData.ctrl_i
+		self.phi_i = iniData.phi_i
+		self.phi_g = iniData.phi_g
 		self.errorbd = errorbd
 		
 	def EoM(self,H,phi_i):	
