@@ -12,24 +12,24 @@ class QH:
 	"""
 	def __init__(self, H0, Hctrl, ctrl_i, phi_i, dt=.01):
 
-		self.H0 = H0          #H0: Hamiltonian with no control/laser
-		self.Hctrl = Hctrl    #Hctr: Hamiltonian of control/laser term
-		self.ctrl_i = ctrl_i  #ctrl_i: initial control/laser
-		self.phi_i = phi_i    #phi_i: initial quantum states
+		self.H0 = H0          #Hamiltonian with no control/laser
+		self.Hctrl = Hctrl    #Hamiltonian of control/laser term
+		self.ctrl_i = ctrl_i  #initial control/laser
+		self.phi_i = phi_i    #initial quantum states
 		self.dt = dt          #time step size
-		self.t_ini = 0.
+		self.t_ini = 0.       #start time
 
-		self.dim = np.shape(self.H0)[0]
-		self.tim_all = np.shape(self.ctrl_i)[0]
+		self.dim = np.shape(self.H0)[0]  #dimension of Hamiltonian
+		self.tim_all = np.shape(self.ctrl_i)[0] #time length of ctrl/laser
 		self.tim_real = np.array(range(self.tim_all)) * self.dt + self.t_ini
-		
+		#real time of time length 
 	
 	def _u_next(self,H,u_now):
 		"""Derive U at next time step"""
 		return expm(-1j*H*self.dt)*u_now
 
 	def u_t(self):
-		"""evolve propergator for given time period"""
+		"""Evolve propergator for given time period"""
 		dim = self.dim 
 		tim_all = self.tim_all
 		ctrl = self.ctrl_i
@@ -37,7 +37,6 @@ class QH:
 		Hctrl = self.Hctrl
 		u_all = np.zeros((tim_all+1,dim,dim),dtype = complex)
 		u_all[0,:,:] = np.eye(dim)
-		#print dim, tim_all, u_all.shape, u_all[0,:,:]
 
 		for tim in xrange(tim_all):
 			H = H0 + np.matrix( ctrl[tim] * np.array(Hctrl) )
@@ -46,7 +45,7 @@ class QH:
 		return u_all
 
 	def phi_t(self):
-		"""evolve state for given time period"""
+		"""Evolve state for given time period"""
 		dim = self.dim
 		tim_all = self.tim_all 
 		phi_all = np.zeros((tim_all+1,dim))
