@@ -2,7 +2,6 @@
  Editor Bin H.
  Quantum Optimal Control Example
 """
-
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import expm
@@ -20,8 +19,8 @@ class QH:
 		self.dt = dt          #time step size
 		self.t_ini = 0.
 
-		self.dim = np.size(self.H0)
-		self.tim_all = np.size(self.ctrl_i)
+		self.dim = np.shape(self.H0)[0]
+		self.tim_all = np.shape(self.ctrl_i)[0]
 		self.tim_real = np.array(range(self.tim_all)) * self.dt + self.t_ini
 		
 	
@@ -33,12 +32,16 @@ class QH:
 		"""evolve propergator for given time period"""
 		dim = self.dim 
 		tim_all = self.tim_all
-		u_ini = np.eye(dim)
-		u_all = np.zeros((tim_all+1,dim,dim))
-	
+		ctrl = self.ctrl_i
+		H0 = self.H0
+		Hctrl = self.Hctrl
+		u_all = np.zeros((tim_all+1,dim,dim),dtype = complex)
+		u_all[0,:,:] = np.eye(dim)
+		#print dim, tim_all, u_all.shape, u_all[0,:,:]
+
 		for tim in xrange(tim_all):
-			H = H0 + Hctrl*ctrl[tim]
-			u_all[tim+1,:,:] = _u_next(H,u_all[tim,:,:])
+			H = H0 + np.matrix( ctrl[tim] * np.array(Hctrl) )
+			u_all[tim+1,:,:] = self._u_next(H, u_all[tim,:,:])
 
 		return u_all
 
@@ -46,10 +49,11 @@ class QH:
 		"""evolve state for given time period"""
 		dim = self.dim
 		tim_all = self.tim_all 
-		phi_all = np.zeros((tim_all+1,dim,1))
-		u_all = u_t()
+		phi_all = np.zeros((tim_all+1,dim))
+		phi_all[0,:] = self.phi_i
+		u_all = self.u_t()
 		for tim in xrange(tim_all):
-			phi_all[tim,:,:] =  u_all[tim+1,:,:]*self.phi_i
+			phi_all[tim+1,:] =  u_all[tim+1,:,:]*self.phi_i
 		
 		return phi_all
 
@@ -101,11 +105,15 @@ class QOCT:
 if __name__ == '__main__':
 
 	H0 = np.matrix([[1,0],[0,-1]])
+	#Hctr = [0,1]
 	Hctr = [[0,1],[1,0]]
-	ctrl = np.zeros(100)
+	ctrl = np.zeros(1000)
 	phi = [0,1]
 	
 	qh_test = QH(H0, Hctr, ctrl, phi)
-
-	plt.plot(qh_test.tim_real, qh_test.phi_t)
-	plt.show()
+	#print (qh_test.tim_real)
+	time = qh_test.tim_real
+	phi = qh_test.phi_t()
+	
+	plt.plot(time, phi[:,0,:])
+#	plt.show()
