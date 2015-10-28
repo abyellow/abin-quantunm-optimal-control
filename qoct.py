@@ -21,12 +21,12 @@ class QH:
 
 		self.dim = np.shape(self.H0)[0]  #dimension of Hamiltonian
 		self.tim_all = np.shape(self.ctrl_i)[0] #time length of ctrl/laser
-		self.tim_real = np.array(range(self.tim_all)) * self.dt + self.t_ini
-		#real time of time length 
+		self.tim_real = np.array(range(self.tim_all+1)) * self.dt +\
+				 self.t_ini	#real time of time length 
 	
-	def _u_next(self,H,u_now):
+	def __u_next(self,H,u_now):
 		"""Derive U at next time step"""
-		return expm(-1j*H*self.dt)*u_now
+		return np.dot(expm(-1j*H*self.dt), u_now)
 
 	def u_t(self):
 		"""Evolve propergator for given time period"""
@@ -40,7 +40,7 @@ class QH:
 
 		for tim in xrange(tim_all):
 			H = H0 + np.matrix( ctrl[tim] * np.array(Hctrl) )
-			u_all[tim+1,:,:] = self._u_next(H, u_all[tim,:,:])
+			u_all[tim+1,:,:] = self.__u_next(H, u_all[tim,:,:])
 
 		return u_all
 
@@ -48,14 +48,14 @@ class QH:
 		"""Evolve state for given time period"""
 		dim = self.dim
 		tim_all = self.tim_all 
-		phi_all = np.zeros((tim_all+1,dim))
-		phi_all[0,:] = self.phi_i
+		phi_all = np.zeros((tim_all+1,dim,1),dtype = complex)
+		phi_all[0,:,:] = self.phi_i[:]
 		u_all = self.u_t()
+
 		for tim in xrange(tim_all):
-			phi_all[tim+1,:] =  u_all[tim+1,:,:]*self.phi_i
+			phi_all[tim+1,:,:] = np.dot(u_all[tim+1,:,:], phi_all[0,:,:])
 		
 		return phi_all
-
 
 
 
@@ -66,9 +66,9 @@ class QOCT:
 
 	def __init__(self, QH):
 		
-		self.errorbd = 10**-4 
-		self.QH = QH
-		self.phi_g  #phi_g: goal quantum states we expect
+		self.errorbd = 10**-4 # error bound of convergence 
+		self.QH = QH          #class QH for all i.c. and EoM
+		self.phi_g            #goal quantum states we expect
 	
 	def u_t_rev(self, H, phi_g):
 		pass	
@@ -104,15 +104,22 @@ class QOCT:
 if __name__ == '__main__':
 
 	H0 = np.matrix([[1,0],[0,-1]])
-	#Hctr = [0,1]
 	Hctr = [[0,1],[1,0]]
-	ctrl = np.zeros(1000)
-	phi = [0,1]
-	
+	ctrl = 1.*np.ones(1000)
+	#phi = [[1],[1]]/np.sqrt(2)
+	phi = [[0],[1]]
+		
 	qh_test = QH(H0, Hctr, ctrl, phi)
-	#print (qh_test.tim_real)
 	time = qh_test.tim_real
 	phi = qh_test.phi_t()
+	prob = phi*np.conjugate(phi)
+	print np.sum(prob,axis = 1)[:20]
 	
-	plt.plot(time, phi[:,0,:])
-#	plt.show()
+	#plt.plot(time, phi[:,1,:].real)
+	#plt.plot(time, phi[:,1,:].imag)
+	plt.plot(time, prob[:,0,:])
+	plt.plot(time, prob[:,1,:])
+	plt.show()
+
+
+
