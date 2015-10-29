@@ -35,6 +35,7 @@ class QH:
 		ctrl = self.ctrl_i
 		H0 = self.H0
 		Hctrl = self.Hctrl
+
 		u_all = np.zeros((tim_all+1,dim,dim),dtype = complex)
 		u_all[0,:,:] = np.eye(dim)
 
@@ -64,20 +65,27 @@ class QOCT:
 	Quantum optimal control codes
 	"""
 
-	def __init__(self, QH):
+	def __init__(self, QH, phi_g):
 		
-		self.errorbd = 10**-4 # error bound of convergence 
+		self.error_bd = 10**-4 # error bound of convergence 
 		self.QH = QH          #class QH for all i.c. and EoM
 		self.phi_g            #goal quantum states we expect
 	
-	def u_t_rev(self, H, phi_g):
-		pass	
+	def __u_prev(self,H,u_now):
+		"""Derive U at next time step"""
+		return np.dot(u_now, expm(-1j*H*self.dt))
 
-	def new_ctrl(self, phi_now, psi_now, Hctr):
+	def u_t_back(self, H, phi_g):
+		"""Evolve propergator backward for given time period"""
 		pass
+
+	def d_ctrl(self, phi_now, psi_now, Hctrl):
+		"""calculate new control/laser variation"""
+		return np.real(np.dot(psi_now,np.dot(Hctrl,phi_now)))
 		
-	def fidelity(phi_i_fi, phi_g):
-		pass
+	def fidelity(phi_T, phi_g):
+		"""fidelity of phi at final time T """
+		return np.dot(phi_g,phi_T)/np.dot(phi_g,phi_g)
 
 	def run(self):
 		pass
