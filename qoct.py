@@ -5,6 +5,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import expm
+from time import clock
 
 class QH:
 	"""
@@ -24,9 +25,13 @@ class QH:
 		self.tim_real = np.array(range(self.tim_all+1)) * self.dt +\
 				 self.t_ini	#real time of time length 
 	
+	def u_dt(self, H):
+		"""propagator of dt time"""
+		return  expm(-1j*H*self.dt)
+
 	def u_next(self,H,u_now):
 		"""Derive U at next time step"""
-		return np.dot(expm(-1j*H*self.dt), u_now)
+		return np.dot(self.u_dt(H), u_now)
 
 	def u_t(self):
 		"""Evolve propergator for given time period"""
@@ -67,13 +72,17 @@ class QOCT:
 
 	def __init__(self, qh_input, phi_g):
 		
-		self.error_bd = 10**-4 # error bound of convergence 
-		self.qh_in = qh_input   #class QH for all i.c. and EoM
-		self.phi_g            #goal quantum states we expect
+		self.error_bd = 10**-4  # error bound of convergence 
+		self.qh_in = qh_input   # class QH for all i.c. and EoM
+		self.phi_g = phi_g      # goal quantum states we expect
+		self.lmda = 10.         # learning rate
+		self.iter_time = 1000
+
+
 	
-	def u_prev(self,H,u_now):
+	def u_prev(self, H, u_now):
 		"""Derive U at next time step"""
-		return np.dot(u_now, expm(-1j*H*self.dt))
+		return np.dot(u_now, self.qh_in.u_dt(H))
 
 	def u_t_back(self):
 		"""Evolve propergator backward for given time period"""
@@ -102,44 +111,52 @@ class QOCT:
 		u_all = self.u_t_back()
 
 		for tim in xrange(tim_all,0,-1):
-			phi_all[tim,:,:] = np.dot(u_all[tim,:,:], phi_all[0,:,:])
+			psi_all[tim,:,:] = np.dot(u_all[tim,:,:].T, psi_all[-1,:,:])
 		
-		return phi_all
+		return psi_all
 
 	def d_ctrl(self, phi_now, psi_now):
 		"""calculate new control/laser variation"""
-		return np.real(np.dot(psi_now,np.dot(self.qh_in.ctrl,phi_now)))
+		return np.real(np.dot(np.matrix(psi_now).T,np.dot(self.qh_in.Hctrl,phi_now)))
 
 	def norm_ctrl(self, *ctrls):
-		"""normalize control"""
+		"""normalize to unit one of control"""
 		ctrl_norm = 0
 		for ctrl in ctrls:
 			ctrl_norm += ctrl**2
 
-		return ctrl_norm	
+		return ctrls/ctrl_norm	
 	
-	def fidelity(phi_T, phi_g):
+	def fidelity(self, phi_T, phi_g):
 		"""fidelity of phi at final time T """
-		return np.dot(phi_g,phi_T)/np.dot(phi_g,phi_g)
+		return np.dot(np.matrix(phi_g).T,phi_T)/np.dot(np.matrix(phi_g).T,phi_g)
 
 	def run(self):
-		
-		phi_t  = qh_in.phi_t() 
-		tim_all = self.qh_in.tim_all		
+		"""run quantum optimal control algoritm"""
+		start = clock()
+		ctrl = self.qh_in.ctrl
+		phi_t  = self.qh_in.phi_t() 
+		tim_all = self.qh_in.tim_all
+		iter_time = self.iter_time		
+
 		for it in range(iter_time):
 			
 			psi_t = self.psi_t()
-			fi = fidelity(phi_t[-1,:,:], phi_g[:])
-			print 'Error:', 1-fi
+			fi = abs(self.fidelity(phi_t[-1,:,:], phi_g[:]))
+
+			print 'IterTime: %s,   Error: %s,   TotTime: %s,   AvgTime: %s'\
+				%( it+1, 1-fi, clock()-start, (clock()-start)/(it+1))
 			
 			if 1-fi < self.error_bd:
 				break
 		
 			for tim in range(tim_all):
-				dctrl = self.d_ctrl(phi_now, psi_t[tim])
-				new_ctrl = ctrl + dctrl 
-				nctrl =  self.norm_ctrl(new_ctrl)
-				phi_t[]  = self.qh_in.u_next(H,u_now)
+				dctrl = self.d_ctrl(phi[tim,:,:], psi_t[tim,:,:])/(2*self.lmda)
+				ctrl[tim] += dctrl 
+				#nctrl =  self.norm_ctrl(new_ctrl)
+				H = H0 + np.matrix( ctrl[tim] * np.array(self.qh_in.Hctrl) )
+				u_next  = self.qh_in.u_next(H, self.qh_in.u_dt(H))
+				phi_t[tim+1,:,:] = np.dot(u_next, phi_t[tim,:,:])
 
 		return ctrl 	
 		
@@ -156,13 +173,15 @@ if __name__ == '__main__':
 	time = qh_test.tim_real
 	phi = qh_test.phi_t()
 	prob = phi*np.conjugate(phi)
-	print np.sum(prob,axis = 1)[:20]
 	
 	#plt.plot(time, phi[:,1,:].real)
 	#plt.plot(time, phi[:,1,:].imag)
+	"""
 	plt.plot(time, prob[:,0,:])
 	plt.plot(time, prob[:,1,:])
 	plt.show()
-
-
-
+	"""
+	phi_g = [[1],[0]]
+	qoct_test = QOCT(qh_test,phi_g)
+	ctrl_test = qoct_test.run()	
+	
