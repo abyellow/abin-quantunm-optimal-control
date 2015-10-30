@@ -106,17 +106,17 @@ class QOCT:
 		"""backward state start from time T with goal state"""
 		dim = self.qh_in.dim
 		tim_all = self.qh_in.tim_all 
-		psi_all = np.zeros((tim_all+1,dim,1),dtype = complex)
-		psi_all[-1,:,:] = self.phi_g[:]
+		psi_all = np.zeros((tim_all+1,1,dim),dtype = complex)
+		psi_all[-1,:,:] = np.matrix(self.phi_g[:]).T
 		u_all = self.u_t_back()
 
 		for tim in xrange(tim_all,0,-1):
-			psi_all[tim,:,:] = np.dot(u_all[tim,:,:], psi_all[-1,:,:])
+			psi_all[tim,:,:] = np.dot(psi_all[-1,:,:], u_all[tim,:,:])
 		return psi_all
 
-	def d_ctrl(self, phi_now, psi_now):
+	def d_ctrl(self, psi_now, Hctrl, phi_now):
 		"""calculate new control/laser variation"""
-		return np.real(np.dot(np.matrix(psi_now).T,np.dot(self.qh_in.Hctrl,phi_now)))
+		return np.real(np.dot(psi_now, np.dot(Hctrl, phi_now)))
 
 	def norm_ctrl(self, *ctrls):
 		"""normalize to unit one of control"""
@@ -141,23 +141,22 @@ class QOCT:
 		for it in range(iter_time):
 			
 			psi_t = self.psi_t()
-			fi = abs(self.fidelity(phi_t[-1,:,:], phi_g[:]))
-
+			fi = (self.fidelity(phi_t[-1,:,:], phi_g[:]))
 			print 'IterTime: %s,   Error: %s,   TotTime: %s,   AvgTime: %s'\
-				%( it+1, 1-fi, clock()-start, (clock()-start)/(it+1))
+				%( it+1, 1-abs(fi), clock()-start, (clock()-start)/(it+1))
 			
-			if 1-fi < self.error_bd:
+			if 1-abs(fi) < self.error_bd:
 				break
 		
 			for tim in range(tim_all):
-				dctrl = self.d_ctrl(phi[tim,:,:], psi_t[tim,:,:])/(2*self.lmda)
+				dctrl = self.d_ctrl(psi_t[tim,:,:], self.qh_in.Hctrl, phi_t[tim,:,:])\
+						/(2*self.lmda)
 				ctrl[tim] += dctrl 
 				#nctrl =  self.norm_ctrl(new_ctrl)
 				H = H0 + np.matrix( ctrl[tim] * np.array(self.qh_in.Hctrl) )
 				u_next  = self.qh_in.u_dt(H)
 				phi_t[tim+1,:,:] = np.dot(u_next, phi_t[tim,:,:])
-		
-			print sum(dctrl)
+
 
 		return ctrl 	
 		
@@ -172,23 +171,35 @@ if __name__ == '__main__':
 		
 	qh_test = QH(H0, Hctr, ctrl, phi)
 	time = qh_test.tim_real
+	"""
 	phi = qh_test.phi_t()
 	prob = phi*np.conjugate(phi)
 	
-	#plt.plot(time, phi[:,1,:].real)
 	#plt.plot(time, phi[:,1,:].imag)
-	'''	
+	#plt.plot(time, phi[:,1,:].imag)
+		
 	plt.plot(time, prob[:,0,:],'r')
 	plt.plot(time, prob[:,1,:],'b')
 	plt.show()
-	'''	
+	"""
+	
 	phi_g = [[1],[0]]
 	qoct_test = QOCT(qh_test,phi_g)
+	"""
 	psi = qoct_test.psi_t()
 	prob_s = psi*np.conjugate(psi)
 
 	plt.plot(time, prob_s[:,0,:],'r')
 	plt.plot(time, prob_s[:,1,:],'b')
 	plt.show()
+	"""
 	ctrl_test = qoct_test.run()	
-	
+	plt.plot(time[:-1], ctrl_test)
+	plt.show()
+
+	phi_new = qh_test.phi_t()
+	prob_new = phi_new*np.conjugate(phi_new)
+
+	plt.plot(time, prob_new[:,0,:],'r')
+	plt.plot(time, prob_new[:,1,:],'b')
+	plt.show()
