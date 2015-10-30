@@ -98,7 +98,7 @@ class QOCT:
 
 		for tim in xrange(tim_all,0,-1):
 			H = H0 + np.matrix( ctrl[tim-1] * np.array(Hctrl) )
-			u_all[tim,:,:] = self.u_prev(H, u_all[tim-1,:,:])
+			u_all[tim-1,:,:] = self.u_prev(H, u_all[tim,:,:])
 
 		return u_all
 
@@ -111,8 +111,7 @@ class QOCT:
 		u_all = self.u_t_back()
 
 		for tim in xrange(tim_all,0,-1):
-			psi_all[tim,:,:] = np.dot(u_all[tim,:,:].T, psi_all[-1,:,:])
-		
+			psi_all[tim,:,:] = np.dot(u_all[tim,:,:], psi_all[-1,:,:])
 		return psi_all
 
 	def d_ctrl(self, phi_now, psi_now):
@@ -155,8 +154,10 @@ class QOCT:
 				ctrl[tim] += dctrl 
 				#nctrl =  self.norm_ctrl(new_ctrl)
 				H = H0 + np.matrix( ctrl[tim] * np.array(self.qh_in.Hctrl) )
-				u_next  = self.qh_in.u_next(H, self.qh_in.u_dt(H))
+				u_next  = self.qh_in.u_dt(H)
 				phi_t[tim+1,:,:] = np.dot(u_next, phi_t[tim,:,:])
+		
+			print sum(dctrl)
 
 		return ctrl 	
 		
@@ -176,12 +177,18 @@ if __name__ == '__main__':
 	
 	#plt.plot(time, phi[:,1,:].real)
 	#plt.plot(time, phi[:,1,:].imag)
-	"""
-	plt.plot(time, prob[:,0,:])
-	plt.plot(time, prob[:,1,:])
+	'''	
+	plt.plot(time, prob[:,0,:],'r')
+	plt.plot(time, prob[:,1,:],'b')
 	plt.show()
-	"""
+	'''	
 	phi_g = [[1],[0]]
 	qoct_test = QOCT(qh_test,phi_g)
+	psi = qoct_test.psi_t()
+	prob_s = psi*np.conjugate(psi)
+
+	plt.plot(time, prob_s[:,0,:],'r')
+	plt.plot(time, prob_s[:,1,:],'b')
+	plt.show()
 	ctrl_test = qoct_test.run()	
 	
