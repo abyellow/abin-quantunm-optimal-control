@@ -165,7 +165,7 @@ if __name__ == '__main__':
 
 	H0 = np.matrix([[1,0],[0,-1]])
 	Hctr = [[0,1],[1,0]]
-	ctrl = 1.*np.ones(1000)
+	ctrl = .1*np.ones(1000)
 	#phi = [[1],[1]]/np.sqrt(2)
 	phi = [[0],[1]]
 		
@@ -196,10 +196,33 @@ if __name__ == '__main__':
 	ctrl_test = qoct_test.run()	
 	plt.plot(time[:-1], ctrl_test)
 	plt.show()
-
+	
 	phi_new = qh_test.phi_t()
 	prob_new = phi_new*np.conjugate(phi_new)
-
+	
 	plt.plot(time, prob_new[:,0,:],'r')
 	plt.plot(time, prob_new[:,1,:],'b')
 	plt.show()
+
+	
+	lon = np.size(ctrl_test)
+	ctrl_lon = np.zeros(3*lon)
+	ctrl_lon[lon:2*lon ] = ctrl_test[:]
+
+
+	tim_lon = np.array(range(np.size(ctrl_lon))) * qh_test.dt +\
+			 qh_test.t_ini	#real time of time length 
+	qh_test.ctrl = ctrl_lon
+	tim_lon = qh_test.tim_real
+	print np.size(tim_lon), np.size(ctrl_lon), np.size(qh_test.ctrl)
+	plt.plot(tim_lon[:-1], ctrl_lon)
+	plt.show()
+
+	phi_lon = qh_test.phi_t()
+	prob_lon = phi_lon*np.conjugate(phi_lon)
+
+	plt.plot(tim_lon, prob_lon[:,0,:],'r')
+	plt.plot(tim_lon, prob_lon[:,1,:],'b')
+	plt.show()
+
+
