@@ -152,7 +152,7 @@ class QOCT:
 				dctrl = self.d_ctrl(psi_t[tim,:,:], self.qh_in.Hctrl, phi_t[tim,:,:])\
 						/(2*self.lmda)
 				ctrl[tim] += dctrl 
-				#nctrl =  self.norm_ctrl(new_ctrl)
+				#ctrl =  self.norm_ctrl(ctrl[tim])
 				H = H0 + np.matrix( ctrl[tim] * np.array(self.qh_in.Hctrl) )
 				u_next  = self.qh_in.u_dt(H)
 				phi_t[tim+1,:,:] = np.dot(u_next, phi_t[tim,:,:])
@@ -163,15 +163,15 @@ class QOCT:
 
 if __name__ == '__main__':
 
-	H0 = np.matrix([[1,0],[0,-1]])
-	Hctr = [[0,1],[1,0]]
-	ctrl = 1.*np.ones(1000)
+	H0 = np.matrix([[1,1],[1,1]])
+	Hctr = [[1,0],[0,-1]]
+	ctrl = .1*np.ones(1000)
 	#phi = [[1],[1]]/np.sqrt(2)
 	phi = [[0],[1]]
 		
 	qh_test = QH(H0, Hctr, ctrl, phi)
 	time = qh_test.tim_real
-	"""
+	"""	
 	phi = qh_test.phi_t()
 	prob = phi*np.conjugate(phi)
 	
@@ -196,10 +196,30 @@ if __name__ == '__main__':
 	ctrl_test = qoct_test.run()	
 	plt.plot(time[:-1], ctrl_test)
 	plt.show()
-
+	
 	phi_new = qh_test.phi_t()
 	prob_new = phi_new*np.conjugate(phi_new)
-
+	
 	plt.plot(time, prob_new[:,0,:],'r')
 	plt.plot(time, prob_new[:,1,:],'b')
 	plt.show()
+	
+	lon = np.size(ctrl_test)
+	ctrl_lon = np.zeros(3*lon)
+	ctrl_lon[lon:2*lon ] = ctrl_test[:]
+
+	qh_test2 = QH(H0, Hctr, ctrl_lon, phi)
+
+	time2 = qh_test2.tim_real
+		
+	phi2 = qh_test2.phi_t()
+	prob2 = phi2 * np.conjugate(phi2)
+	
+	#plt.plot(time, phi[:,1,:].imag)
+	#plt.plot(time, phi[:,1,:].imag)
+		
+	plt.plot(time2, prob2[:,0,:],'r')
+	plt.plot(time2, prob2[:,1,:],'b')
+	plt.show()
+	
+
