@@ -163,8 +163,13 @@ class QOCT:
 
 if __name__ == '__main__':
 
+<<<<<<< HEAD
 	H0 = np.matrix([[1,1],[1,1]])
 	Hctr = [[1,0],[0,-1]]
+=======
+	H0 = np.matrix([[1,0],[0,-1]])
+	Hctr = [[0,1],[1,0]]
+>>>>>>> ccbb3605157cd274f320b320b6d726d56b653e67
 	ctrl = .1*np.ones(1000)
 	#phi = [[1],[1]]/np.sqrt(2)
 	phi = [[0],[1]]
@@ -203,11 +208,16 @@ if __name__ == '__main__':
 	plt.plot(time, prob_new[:,0,:],'r')
 	plt.plot(time, prob_new[:,1,:],'b')
 	plt.show()
+<<<<<<< HEAD
+=======
+
+>>>>>>> ccbb3605157cd274f320b320b6d726d56b653e67
 	
 	lon = np.size(ctrl_test)
 	ctrl_lon = np.zeros(3*lon)
 	ctrl_lon[lon:2*lon ] = ctrl_test[:]
 
+<<<<<<< HEAD
 	qh_test2 = QH(H0, Hctr, ctrl_lon, phi)
 
 	time2 = qh_test2.tim_real
@@ -222,4 +232,22 @@ if __name__ == '__main__':
 	plt.plot(time2, prob2[:,1,:],'b')
 	plt.show()
 	
+=======
+
+	tim_lon = np.array(range(np.size(ctrl_lon))) * qh_test.dt +\
+			 qh_test.t_ini	#real time of time length 
+	qh_test.ctrl = ctrl_lon
+	tim_lon = qh_test.tim_real
+	print np.size(tim_lon), np.size(ctrl_lon), np.size(qh_test.ctrl)
+	plt.plot(tim_lon[:-1], ctrl_lon)
+	plt.show()
+
+	phi_lon = qh_test.phi_t()
+	prob_lon = phi_lon*np.conjugate(phi_lon)
+
+	plt.plot(tim_lon, prob_lon[:,0,:],'r')
+	plt.plot(tim_lon, prob_lon[:,1,:],'b')
+	plt.show()
+
+>>>>>>> ccbb3605157cd274f320b320b6d726d56b653e67
 
