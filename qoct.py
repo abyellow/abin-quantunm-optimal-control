@@ -180,6 +180,7 @@ if __name__ == '__main__':
 	
 	phi_g = [[1],[0]]
 	qoct_test = QOCT(qh_test, phi_g)
+	
 	"""
 	psi = qoct_test.psi_t()
 	prob_s = psi*np.conjugate(psi)
@@ -188,6 +189,7 @@ if __name__ == '__main__':
 	plt.plot(time, prob_s[:,1,:],'b')
 	plt.show()
 	"""
+	
 	ctrl_test = qoct_test.run()	
 	plt.plot(time[:-1], ctrl_test)
 	plt.show()
