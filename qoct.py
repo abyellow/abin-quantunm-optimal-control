@@ -72,12 +72,11 @@ class QOCT:
 
 	def __init__(self, qh_input, phi_g):
 		
-		self.error_bd = 10**-4  # error bound of convergence 
 		self.qh_in = qh_input   # class QH for all i.c. and EoM
 		self.phi_g = phi_g      # goal quantum states we expect
 		self.lmda = 10.         # learning rate
 		self.iter_time = 1000
-
+		self.error_bd = 10**-4  # error bound of convergence 
 
 	
 	def u_prev(self, H, u_now):
@@ -106,7 +105,7 @@ class QOCT:
 		"""backward state start from time T with goal state"""
 		dim = self.qh_in.dim
 		tim_all = self.qh_in.tim_all 
-		psi_all = np.zeros((tim_all+1,1,dim),dtype = complex)
+		psi_all = np.zeros((tim_all+1,1,dim), dtype = complex)
 		psi_all[-1,:,:] = np.matrix(self.phi_g[:]).T
 		u_all = self.u_t_back()
 
@@ -126,9 +125,9 @@ class QOCT:
 
 		return ctrls/ctrl_norm	
 	
-	def fidelity(self, phi_T, phi_g):
+	def fidelity(self, phi_T, phi_go):
 		"""fidelity of phi at final time T """
-		return np.dot(np.matrix(phi_g).T,phi_T)/np.dot(np.matrix(phi_g).T,phi_g)
+		return np.dot(np.matrix(phi_go).T,phi_T)/np.dot(np.matrix(phi_go).T,phi_go)
 
 	def run(self):
 		"""run quantum optimal control algoritm"""
@@ -136,10 +135,11 @@ class QOCT:
 		ctrl = self.qh_in.ctrl
 		phi_t  = self.qh_in.phi_t() 
 		tim_all = self.qh_in.tim_all
-		iter_time = self.iter_time		
+		iter_time = self.iter_time
+		phi_g = self.phi_g
 
 		for it in range(iter_time):
-			
+
 			psi_t = self.psi_t()
 			fi = (self.fidelity(phi_t[-1,:,:], phi_g[:]))
 			print 'IterTime: %s,   Error: %s,   TotTime: %s,   AvgTime: %s'\
@@ -152,7 +152,6 @@ class QOCT:
 				dctrl = self.d_ctrl(psi_t[tim,:,:], self.qh_in.Hctrl, phi_t[tim,:,:])\
 						/(2*self.lmda)
 				ctrl[tim] += dctrl 
-				#ctrl =  self.norm_ctrl(ctrl[tim])
 				H = H0 + np.matrix( ctrl[tim] * np.array(self.qh_in.Hctrl) )
 				u_next  = self.qh_in.u_dt(H)
 				phi_t[tim+1,:,:] = np.dot(u_next, phi_t[tim,:,:])
@@ -166,25 +165,21 @@ if __name__ == '__main__':
 	H0 = np.matrix([[1,1],[1,1]])
 	Hctr = [[1,0],[0,-1]]
 	ctrl = .1*np.ones(1000)
-	#phi = [[1],[1]]/np.sqrt(2)
 	phi = [[0],[1]]
 		
 	qh_test = QH(H0, Hctr, ctrl, phi)
 	time = qh_test.real_tim
-	"""	
+		
 	phi = qh_test.phi_t()
 	prob = phi*np.conjugate(phi)
 	
-	#plt.plot(time, phi[:,1,:].imag)
-	#plt.plot(time, phi[:,1,:].imag)
-		
 	plt.plot(time, prob[:,0,:],'r')
 	plt.plot(time, prob[:,1,:],'b')
 	plt.show()
-	"""
+	
 	
 	phi_g = [[1],[0]]
-	qoct_test = QOCT(qh_test,phi_g)
+	qoct_test = QOCT(qh_test, phi_g)
 	"""
 	psi = qoct_test.psi_t()
 	prob_s = psi*np.conjugate(psi)
@@ -198,7 +193,7 @@ if __name__ == '__main__':
 	plt.show()
 	
 	phi_new = qh_test.phi_t()
-	prob_new = phi_new*np.conjugate(phi_new)
+	prob_new = np.real(phi_new*np.conjugate(phi_new))
 	
 	plt.plot(time, prob_new[:,0,:],'r')
 	plt.plot(time, prob_new[:,1,:],'b')
@@ -209,15 +204,10 @@ if __name__ == '__main__':
 	ctrl_lon[lon:2*lon ] = ctrl_test[:]
 
 	qh_test2 = QH(H0, Hctr, ctrl_lon, phi)
-
 	time2 = qh_test2.real_tim
-		
 	phi2 = qh_test2.phi_t()
+
 	prob2 = phi2 * np.conjugate(phi2)
-	
-	#plt.plot(time, phi[:,1,:].imag)
-	#plt.plot(time, phi[:,1,:].imag)
-		
 	plt.plot(time2, prob2[:,0,:],'r')
 	plt.plot(time2, prob2[:,1,:],'b')
 	plt.show()
