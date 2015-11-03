@@ -63,17 +63,17 @@ class QH:
 		
 		return phi_all
 
-
+	def prob_t(self):
+		pass
 
 class QOCT:
 	"""
 	Quantum optimal control codes
 	"""
-
-	def __init__(self, qh_input, phi_g):
+	def __init__(self, qh_input, phi_go):
 		
 		self.qh_in = qh_input   # class QH for all i.c. and EoM
-		self.phi_g = phi_g      # goal quantum states we expect
+		self.phi_go = phi_go      # goal quantum states we expect
 		self.lmda = 10.         # learning rate
 		self.iter_time = 1000
 		self.error_bd = 10**-4  # error bound of convergence 
@@ -106,7 +106,7 @@ class QOCT:
 		dim = self.qh_in.dim
 		tim_all = self.qh_in.tim_all 
 		psi_all = np.zeros((tim_all+1,1,dim), dtype = complex)
-		psi_all[-1,:,:] = np.matrix(self.phi_g[:]).T
+		psi_all[-1,:,:] = np.matrix(self.phi_go[:]).T
 		u_all = self.u_t_back()
 
 		for tim in xrange(tim_all,0,-1):
@@ -136,23 +136,26 @@ class QOCT:
 		phi_t  = self.qh_in.phi_t() 
 		tim_all = self.qh_in.tim_all
 		iter_time = self.iter_time
-		phi_g = self.phi_g
+		phi_go = self.phi_go
+		H0 = self.qh_in.H0
+		Hctrl = self.qh_in.Hctrl
+		lmda = self.lmda
 
 		for it in range(iter_time):
 
 			psi_t = self.psi_t()
-			fi = (self.fidelity(phi_t[-1,:,:], phi_g[:]))
+			fi = self.fidelity(phi_t[-1,:,:], phi_go[:])
 			print 'IterTime: %s,   Error: %s,   TotTime: %s,   AvgTime: %s'\
-				%( it+1, 1-abs(fi), clock()-start, (clock()-start)/(it+1))
+				 %( it+1, 1-abs(fi), clock()-start, (clock()-start)/(it+1))
 			
 			if 1-abs(fi) < self.error_bd:
 				break
 		
 			for tim in range(tim_all):
-				dctrl = self.d_ctrl(psi_t[tim,:,:], self.qh_in.Hctrl, phi_t[tim,:,:])\
-						/(2*self.lmda)
+				dctrl = self.d_ctrl(psi_t[tim,:,:], Hctrl, phi_t[tim,:,:])\
+						/(2*lmda)
 				ctrl[tim] += dctrl 
-				H = H0 + np.matrix( ctrl[tim] * np.array(self.qh_in.Hctrl) )
+				H = H0 + np.matrix( ctrl[tim] * np.array(Hctrl) )
 				u_next  = self.qh_in.u_dt(H)
 				phi_t[tim+1,:,:] = np.dot(u_next, phi_t[tim,:,:])
 
@@ -162,12 +165,12 @@ class QOCT:
 
 if __name__ == '__main__':
 
-	H0 = np.matrix([[1,1],[1,1]])
+	H0 = [[1,1],[1,1]]
 	Hctr = [[1,0],[0,-1]]
-	ctrl = .1*np.ones(1000)
-	phi = [[0],[1]]
+	ctrl_i = .1*np.ones(1000)
+	phi_i = [[0],[1]]
 		
-	qh_test = QH(H0, Hctr, ctrl, phi)
+	qh_test = QH(H0, Hctr, ctrl_i, phi_i)
 	time = qh_test.real_tim
 		
 	phi = qh_test.phi_t()
@@ -205,7 +208,7 @@ if __name__ == '__main__':
 	ctrl_lon = np.zeros(3*lon)
 	ctrl_lon[lon:2*lon ] = ctrl_test[:]
 
-	qh_test2 = QH(H0, Hctr, ctrl_lon, phi)
+	qh_test2 = QH(H0, Hctr, ctrl_lon, phi_i)
 	time2 = qh_test2.real_tim
 	phi2 = qh_test2.phi_t()
 
