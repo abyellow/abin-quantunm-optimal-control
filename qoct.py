@@ -64,7 +64,9 @@ class QH:
 		return phi_all
 
 	def prob_t(self):
-		pass
+		phi = self.phi_t()
+		return np.real(phi*np.conjugate(phi))
+	
 
 class QOCT:
 	"""
@@ -173,9 +175,8 @@ if __name__ == '__main__':
 	qh_test = QH(H0, Hctr, ctrl_i, phi_i)
 	time = qh_test.real_tim
 		
-	phi = qh_test.phi_t()
-	prob = phi*np.conjugate(phi)
-	
+#	phi = qh_test.phi_t()
+	prob = qh_test.prob_t()
 	plt.plot(time, prob[:,0,:],'r')
 	plt.plot(time, prob[:,1,:],'b')
 	plt.show()
