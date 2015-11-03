@@ -198,8 +198,8 @@ if __name__ == '__main__':
 	plt.plot(time[:-1], ctrl_test)
 	plt.show()
 	
-	phi_new = qh_test.phi_t()
-	prob_new = np.real(phi_new*np.conjugate(phi_new))
+	#phi_new = qh_test.phi_t()
+	prob_new = qh_test.prob_t()#np.real(phi_new*np.conjugate(phi_new))
 	
 	plt.plot(time, prob_new[:,0,:],'r')
 	plt.plot(time, prob_new[:,1,:],'b')
@@ -211,9 +211,9 @@ if __name__ == '__main__':
 
 	qh_test2 = QH(H0, Hctr, ctrl_lon, phi_i)
 	time2 = qh_test2.real_tim
-	phi2 = qh_test2.phi_t()
+	prob2 = qh_test2.prob_t()
 
-	prob2 = phi2 * np.conjugate(phi2)
+	#prob2 = phi2 * np.conjugate(phi2)
 	plt.plot(time2, prob2[:,0,:],'r')
 	plt.plot(time2, prob2[:,1,:],'b')
 	plt.show()
