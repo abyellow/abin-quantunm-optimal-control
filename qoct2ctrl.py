@@ -187,9 +187,13 @@ if __name__ == '__main__':
 	Hctr2 = [[1,0],[0,-1]]
 	ctrl = .9*np.ones(1000)
 	ctrl2 = .1*np.ones(1000)
-	#phi = [[1],[1]]/np.sqrt(2)
-	phi_i = [[0],[1]]
-		
+	
+	norm = lambda x: np.sqrt(sum(np.array(x)**2))
+	 
+	phi_i = [[1],[np.sqrt(2)-1]]
+	phi_i = phi_i / norm(phi_i)
+	
+	
 	qh_test = QH(H0, Hctr, ctrl, Hctr2, ctrl2, phi_i)
 	time = qh_test.real_tim
 		
@@ -199,7 +203,8 @@ if __name__ == '__main__':
 	plt.plot(time, prob[:,1,:],'b')
 	plt.show()
 	
-	phi_g = [[1],[0]]
+	phi_g = [[np.sqrt(2)-1],[-1]]
+	phi_g = phi_g / norm(phi_g) 
 	qoct_test = QOCT(qh_test,phi_g)
 	"""
 	psi = qoct_test.psi_t()
