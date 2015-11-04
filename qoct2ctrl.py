@@ -68,6 +68,8 @@ class QH:
 		
 		return phi_all
 
+	def prob_t(self, phi):
+		return np.real(phi*np.conjugate(phi))
 
 
 class QOCT:
@@ -142,6 +144,12 @@ class QOCT:
 		phi_t  = self.qh_in.phi_t() 
 		tim_all = self.qh_in.tim_all
 		iter_time = self.iter_time		
+		phi_g = self.phi_g
+		H0 = self.qh_in.H0
+		Hctrl = self.qh_in.Hctrl
+		Hctrl2 = self.qh_in.Hctrl2
+		lmda = self.lmda
+
 
 		for it in range(iter_time):
 			
@@ -154,17 +162,17 @@ class QOCT:
 				break
 		
 			for tim in range(tim_all):
-				dctrl = self.d_ctrl(psi_t[tim,:,:], self.qh_in.Hctrl, phi_t[tim,:,:])\
-						/(2*self.lmda)
-				dctrl2 = self.d_ctrl(psi_t[tim,:,:], self.qh_in.Hctrl2, phi_t[tim,:,:])\
-						/(2*self.lmda)
+				dctrl = self.d_ctrl(psi_t[tim,:,:], Hctrl, phi_t[tim,:,:])\
+						/(2*lmda)
+				dctrl2 = self.d_ctrl(psi_t[tim,:,:], Hctrl2, phi_t[tim,:,:])\
+						/(2*lmda)
 				ctrl[tim] += dctrl 
 				ctrl2[tim] += dctrl2
 				ctrl_norm = self.ctrl_norm(ctrl[tim], ctrl2[tim])
 				ctrl[tim], ctrl2[tim] = ctrl[tim] / ctrl_norm, ctrl2[tim] / ctrl_norm
 
-				H = H0 + np.matrix( ctrl[tim] * np.array(self.qh_in.Hctrl) \
-							+ ctrl2[tim] * np.array(self.qh_in.Hctrl2) )
+				H = H0 + np.matrix( ctrl[tim] * np.array(Hctrl) \
+							+ ctrl2[tim] * np.array(Hctrl2) )
 				u_next  = self.qh_in.u_dt(H)
 				phi_t[tim+1,:,:] = np.dot(u_next, phi_t[tim,:,:])
 
@@ -174,27 +182,22 @@ class QOCT:
 
 if __name__ == '__main__':
 
-	H0 = np.matrix([[1,1],[1,1]])
+	H0 = np.matrix([[1,1],[1,-1]])
 	Hctr = [[1,0],[0,-1]]
 	Hctr2 = [[1,0],[0,-1]]
 	ctrl = .9*np.ones(1000)
 	ctrl2 = .1*np.ones(1000)
 	#phi = [[1],[1]]/np.sqrt(2)
-	phi = [[0],[1]]
+	phi_i = [[0],[1]]
 		
-	qh_test = QH(H0, Hctr, ctrl, Hctr2, ctrl2, phi)
+	qh_test = QH(H0, Hctr, ctrl, Hctr2, ctrl2, phi_i)
 	time = qh_test.real_tim
-	"""	
-	phi = qh_test.phi_t()
-	prob = phi*np.conjugate(phi)
-	
-	#plt.plot(time, phi[:,1,:].imag)
-	#plt.plot(time, phi[:,1,:].imag)
 		
+	phi = qh_test.phi_t()
+	prob = qh_test.prob_t(phi)
 	plt.plot(time, prob[:,0,:],'r')
 	plt.plot(time, prob[:,1,:],'b')
 	plt.show()
-	"""
 	
 	phi_g = [[1],[0]]
 	qoct_test = QOCT(qh_test,phi_g)
@@ -206,13 +209,14 @@ if __name__ == '__main__':
 	plt.plot(time, prob_s[:,1,:],'b')
 	plt.show()
 	"""
+
 	ctrl_test, ctrl2_test = qoct_test.run()	
 	plt.plot(time[:-1], ctrl_test)
 	plt.plot(time[:-1], ctrl2_test)
 	plt.show()
 	
 	phi_new = qh_test.phi_t()
-	prob_new = phi_new*np.conjugate(phi_new)
+	prob_new = qh_test.prob_t(phi_new)#phi_new*np.conjugate(phi_new)
 	
 	plt.plot(time, prob_new[:,0,:],'r')
 	plt.plot(time, prob_new[:,1,:],'b')
@@ -225,16 +229,12 @@ if __name__ == '__main__':
 	ctrl2_lon = np.zeros(3*lon)
 	ctrl2_lon[lon:2*lon] = ctrl2_test[:]
 
-	qh_test2 = QH(H0, Hctr, ctrl_lon, Hctr2, ctrl2_lon, phi)
+	qh_test2 = QH(H0, Hctr, ctrl_lon, Hctr2, ctrl2_lon, phi_i)
 
 	time2 = qh_test2.real_tim
 		
 	phi2 = qh_test2.phi_t()
-	prob2 = phi2 * np.conjugate(phi2)
-	
-	#plt.plot(time, phi[:,1,:].imag)
-	#plt.plot(time, phi[:,1,:].imag)
-		
+	prob2 = qh_test2.prob_t(phi2)	
 	plt.plot(time2, prob2[:,0,:],'r')
 	plt.plot(time2, prob2[:,1,:],'b')
 	plt.show()
