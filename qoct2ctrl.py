@@ -69,8 +69,25 @@ class QH:
 		return phi_all
 
 	def prob_t(self, phi):
+		"""probability distribution of state phi"""
 		return np.real(phi*np.conjugate(phi))
 
+	def eigE_t(self):
+		
+		tim_all = self.tim_all
+		ctrl = self.ctrl
+		ctrl2 = self.ctrl2
+		H0 = self.H0
+		Hctrl = self.Hctrl
+		Hctrl2 = self.Hctrl2
+		eig_E = []
+		for tim in xrange(tim_all):
+			H = H0 + np.matrix( ctrl[tim] * np.array(Hctrl)\
+						 + ctrl2[tim] * np.array(Hctrl2) )
+			eig_val, eig_vec = np.linalg.eig(H)
+			eig_E.append(eig_val)
+
+		return np.array(eig_E)
 
 class QOCT:
 	"""
@@ -202,6 +219,12 @@ if __name__ == '__main__':
 	plt.plot(time, prob[:,0,:],'r')
 	plt.plot(time, prob[:,1,:],'b')
 	plt.show()
+	
+	eigE = qh_test.eigE_t()
+	plt.plot(time[:-1], eigE[:,0],'r')
+	plt.plot(time[:-1], eigE[:,1],'b')
+	plt.show()
+	
 	
 	phi_g = [[np.sqrt(2)-1],[-1]]
 	phi_g = phi_g / norm(phi_g) 
