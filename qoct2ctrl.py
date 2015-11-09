@@ -146,7 +146,7 @@ class QOCT:
 		return np.real(np.dot(psi_now, np.dot(Hctrl, phi_now)))
 
 	def ctrl_norm(self, ctrl, ctrl2):
-		"""normalize to unit one of control"""
+		"""normalize to unit one of controls"""
 		return  np.sqrt(ctrl**2 + ctrl2**2)
 	
 	def fidelity(self, phi_T, phi_g):
@@ -168,7 +168,7 @@ class QOCT:
 		lmda = self.lmda
 
 
-		for it in range(iter_time):
+		for it in xrange(iter_time):
 			
 			psi_t = self.psi_t()
 			fi = (self.fidelity(phi_t[-1,:,:], phi_g[:]))
@@ -178,7 +178,8 @@ class QOCT:
 			if 1-abs(fi) < self.error_bd:
 				break
 		
-			for tim in range(tim_all):
+			for tim in xrange(tim_all):
+
 				dctrl = self.d_ctrl(psi_t[tim,:,:], Hctrl, phi_t[tim,:,:])\
 						/(2*lmda)
 				dctrl2 = self.d_ctrl(psi_t[tim,:,:], Hctrl2, phi_t[tim,:,:])\
