@@ -73,7 +73,7 @@ class QH:
 		return np.real(phi*np.conjugate(phi))
 
 	def eigE_t(self):
-		
+		"""Caculate eigen energy variation with time"""
 		tim_all = self.tim_all
 		ctrl = self.ctrl
 		ctrl2 = self.ctrl2
