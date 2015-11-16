@@ -1,6 +1,7 @@
 """
  Editor Bin H.
  Quantum Optimal Control Example
+ One Control Parameter Model
 """
 import numpy as np
 import matplotlib.pyplot as plt
