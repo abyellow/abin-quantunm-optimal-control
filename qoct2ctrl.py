@@ -110,7 +110,6 @@ class QOCT:
 
 	def u_t_back(self):
 		"""Evolve propergator backward for given time period"""
-		
 		dim = self.qh_in.dim 
 		tim_all = self.qh_in.tim_all
 		ctrl = self.qh_in.ctrl
