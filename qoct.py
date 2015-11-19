@@ -12,6 +12,7 @@ class QH:
 	"""
 	Initial data/conditions of Quantum Hamiltonian and initial states.
 	"""
+
 	def __init__(self, H0, Hctrl, ctrl_i, phi_i, dt=.01):
 
 		self.H0 = H0          #Hamiltonian with no control/laser
