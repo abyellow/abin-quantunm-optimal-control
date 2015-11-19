@@ -89,6 +89,8 @@ class QH:
 
 		return np.array(eig_E)
 
+
+
 class QOCT:
 	"""
 	Quantum optimal control codes
