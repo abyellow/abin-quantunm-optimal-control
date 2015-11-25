@@ -231,14 +231,7 @@ if __name__ == '__main__':
 	phi_g = [[np.sqrt(2)-1],[-1]]
 	phi_g = phi_g / norm(phi_g) 
 	qoct_test = QOCT(qh_test,phi_g)
-	"""
-	psi = qoct_test.psi_t()
-	prob_s = psi*np.conjugate(psi)
 
-	plt.plot(time, prob_s[:,0,:],'r')
-	plt.plot(time, prob_s[:,1,:],'b')
-	plt.show()
-	"""
 
 	ctrl_test, ctrl2_test = qoct_test.run()	
 	plt.plot(time[:-1], ctrl_test)
