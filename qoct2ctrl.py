@@ -96,12 +96,12 @@ class QOCT:
 	Quantum optimal control codes
 	"""
 
-	def __init__(self, qh_input, phi_g):
+	def __init__(self, qh_input, phi_g, lmda = 10.):
 		
 		self.error_bd = 10**-4  # error bound of convergence 
 		self.qh_in = qh_input   # class QH for all i.c. and EoM
 		self.phi_g = phi_g      # goal quantum states we expect
-		self.lmda = 10.         # learning rate
+		self.lmda = lmda         # learning rate
 		self.iter_time = 1000
 
 
