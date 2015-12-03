@@ -48,25 +48,42 @@ if __name__=='__main__':
 	data1 = np.loadtxt(loadname1)
 	x = data1[:,0]
 	y = data1[:,1]
-	print sum(y)/len(y), sum(x)/len(x)
-	x -= sum(x)/len(x)
+#	print sum(y)/len(y), sum(x)/len(x)
+#	x -= sum(x)/len(x)
 #	y -= sum(y)/len(y)
+
+	#window = 21
+	#poly = 2
+	#y = savgol_filter(y, window, poly)
+
 	pl.plot(x,y)
+#	pl.plot(x,ynew, '--')
 	pl.show()
 
 	dt = .01
 	lon = len(y)
-	xf = np.fft.fftfreq(lon, dt)#*2*np.pi
-	yf = (np.fft.fft(y))*dt/2
+	xf = np.fft.rfftfreq(lon, dt)#*2*np.pi
+	yf = (np.fft.rfft(y))*dt/2
+	hbd = max(yf)
 	yf2 = (abs(yf))**2
-	yff = [yf[i] if yf2[i]>1.8 else 0 for i in range(len(yf))]
+	yff = [yf[i] if yf2[i]>.3*hbd else 0 for i in range(len(yf))]
 
-	pl.plot(xf[:],yff[:])
+	pl.plot(xf[:100], yf[:100])
+	pl.show()
+	pl.plot(xf[:100], (yff[:100]))
+	#pl.plot(xf[:], np.imag(yff[:]))
 #	pl.semilogx(xf[:],yf[:])
 	pl.xlabel('$\omega$')
 	pl.ylabel('$F(\omega)$')
 	pl.xlim((-15,15))
 	pl.show()	
+	
+	xi = np.fft.rfftfreq(lon, (xf[1]-xf[0])/2)
+	yi = np.fft.irfft(yf)*2/dt
+	print len(xi), len(yi)
+	pl.plot(x,y,'--')
+	pl.plot(xi[:lon/2+1],yi[:lon/2+1], 'k')
+	pl.show()
 
 	"""
 	loadname2 = 'xfyf.dat'
