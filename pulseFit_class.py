@@ -56,17 +56,21 @@ if __name__=='__main__':
 	#poly = 2
 	#y = savgol_filter(y, window, poly)
 
+	lon = len(y)
+	print lon
 	pl.plot(x,y)
 #	pl.plot(x,ynew, '--')
 	pl.show()
+	
+#!!!	y = np.append(y,np.zeros(lon))
 
 	dt = .01
-	lon = len(y)
 	xf = np.fft.rfftfreq(lon, dt)#*2*np.pi
 	yf = (np.fft.rfft(y))*dt/2
+#	print len(y), len(yf)
 	hbd = max(yf)
 	yf2 = (abs(yf))**2
-	yff = [yf[i] if yf2[i]>.3*hbd else 0 for i in range(len(yf))]
+	yff = [yf[i] if yf2[i]>.2*hbd else 0 for i in range(len(yf))]
 
 	pl.plot(xf[:100], yf[:100])
 	pl.show()
@@ -75,25 +79,29 @@ if __name__=='__main__':
 #	pl.semilogx(xf[:],yf[:])
 	pl.xlabel('$\omega$')
 	pl.ylabel('$F(\omega)$')
-	pl.xlim((-15,15))
+#	pl.xlim((-15,15))
 	pl.show()	
 	
-	xi = np.fft.rfftfreq(lon, (xf[1]-xf[0])/2)
-	yi = np.fft.irfft(yf)*2/dt
+	xi = np.fft.rfftfreq(2*lon-1, (xf[1]-xf[0])/2)
+	yi = np.fft.irfft(yff)*2/dt
 	print len(xi), len(yi)
 	pl.plot(x,y,'--')
-	pl.plot(xi[:lon/2+1],yi[:lon/2+1], 'k')
+	pl.plot(x, yi, 'k',linewidth = 2.0)
 	pl.show()
 
-	"""
-	loadname2 = 'xfyf.dat'
+
+
+	savename = 'xiyi.dat'
+	np.savetxt(savename,np.column_stack((x,yi)))
+
+	loadname2 = 'xiyi.dat'
 	data2 = np.loadtxt(loadname2)
-	xf = data2[:,0]
-	yf = data2[:,1]
 
-	pl.plot(xf,yf)
+	xl = data2[:,0]
+	yl = data2[:,1]
+
+	pl.plot(xl,yl)
 	pl.show()
-	"""
 
 
 	#print np.size(data), np.size(xf), np.size(yf)
