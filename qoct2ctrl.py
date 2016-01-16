@@ -1,6 +1,7 @@
 """
  Editor Bin H.
- Quantum Optimal Control Example of Two Control and Normalization
+ Quantum Optimal Control Example of Two Control Parameters and Normalization
+
 """
 import numpy as np
 import matplotlib.pyplot as plt
