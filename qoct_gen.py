@@ -130,10 +130,8 @@ class QOCT:
 	def norm_ctrl(self, ctrls):
 		"""normalize to unit one of control"""
 		ctrl_norm = 0
-		#print ctrls
 		for ctrl in ctrls:
 			ctrl_norm += ctrl**2
-
 		return ctrls/np.sqrt(ctrl_norm)
 	
 	def fidelity(self, phi_T, phi_go):
@@ -166,8 +164,8 @@ class QOCT:
 				dctrl = self.d_ctrl(psi_t[tim,:,:], Hctrl, phi_t[tim,:,:]) / (2*lmda)
 				ctrl[:,tim] += dctrl[:] 
 
-				#ctrl[:4,tim] = self.norm_ctrl(ctrl[:4,tim])
-				#ctrl[4:,tim] = self.norm_ctrl(ctrl[4:,tim])
+				ctrl[:4,tim] = self.norm_ctrl(ctrl[:4,tim])
+				ctrl[4:,tim] = self.norm_ctrl(ctrl[4:,tim])
 				
 				H = H0
 				for i in range(len(ctrl[:,0])): 
